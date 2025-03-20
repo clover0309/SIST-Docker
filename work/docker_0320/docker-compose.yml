@@ -1,0 +1,31 @@
+services:
+  mysql8:
+    image: mysql:8.0
+    #컨테이너 네임을 빼먹으면, 위에서 써진 변수가 컨테이너 명이 된다.
+    networks:
+      - sist_net
+    #해당 볼륨 부분 덕에 컨테이너를 내렸다가 다시 켜도 데이터가 유지된다.
+    volumes:
+      - ./db/conf.d:/etc/mysql/conf.d
+      - ./db/data:/var/lib/mysql
+      - ./db/initdb.d:/docker-entrypoint-initdb.d
+    env_file:
+      - ./.env
+    ports:
+      - "3307:3306"
+    restart: always
+    
+  backend:
+    build:
+      dockerfile: Dockerfile
+    container_name: boot2
+    networks:
+      - sist_net
+    ports:
+        - "8080:8080"
+    depends_on:
+    #상시 같이 움직여야 할 컨테이너를 명시함.
+      - mysql8
+networks:
+  sist_net:
+    driver: bridge
